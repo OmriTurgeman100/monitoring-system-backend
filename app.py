@@ -1,6 +1,7 @@
 
 from flask import Flask, jsonify, redirect, render_template, request
 from psycopg2.extras import RealDictCursor
+from datetime import datetime
 import psycopg2  
 from constants import DB_HOST, DB_NAME, DB_USER, DB_PASS 
 
@@ -18,6 +19,19 @@ def get_db_connection(): # * config
 @app.errorhandler(404)
 def page_not_found(e):
     return jsonify(message='Undefined route, 404'), 404
+
+# * time 
+@app.route("/get_time", methods=["GET"]) 
+def time():
+    try:
+        # current_time = datetime.now().strftime("%H:%M:%S")
+        # current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        isral_time_and_date = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+
+        return jsonify(time=isral_time_and_date)
+    except Exception as e:
+        print(e)
+        return jsonify({"error": str(e)}), 500  
 
 # * nodes
 @app.route("/api/v1/root_nodes", methods=["GET"])
@@ -278,21 +292,22 @@ def delete_reports(id):
 
     
 # * rules 
-@app.route("/get_rules", methods=["GET"]) # TODO: make rules be evaluated each time a new report is being posted.
-def get_rules():
+@app.route("/api/v1/get/rules/<id>", methods=["GET"])
+def get_specific_report_rules(id):
     try:
         postgres = get_db_connection()
         cursor = postgres.cursor(cursor_factory=RealDictCursor)
 
-        return jsonify('undefined')
+        cursor.execute("select * from report_rules where report_id = %s", (id,))
+        report_rules = cursor.fetchall()
+
+        return jsonify(report_rules), 200
 
     except Exception as e:
         print(e)
-        return jsonify({"error": str(e)}), 500  
     finally:
         cursor.close()
         postgres.close()
-
 
 @app.route("/api/v1/post/report/rules", methods=["POST"])
 def post_rule():

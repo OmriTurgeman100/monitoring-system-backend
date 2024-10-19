@@ -1,0 +1,19 @@
+POST http://127.0.0.1/api/v1/post/rules
+Content-Type: application/json
+
+{
+    "report_id": "cpu usage",
+    "condition_operator": ">",
+    "threshold": 50,
+    "action": "set_parent_status_down"
+}
+
+POST http://127.0.0.1/api/v1/post/rules
+Content-Type: application/json
+
+{
+    "report_id": "cpu usage",
+    "condition_operator": "<",
+    "threshold": 50,
+    "action": "set_parent_status_up"
+}

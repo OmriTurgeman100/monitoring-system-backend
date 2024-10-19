@@ -218,6 +218,8 @@ def post_report():
 
             new_node = cursor.fetchone()
 
+            evaluate_report_rules(report_id, value, parent)
+
             return jsonify(new_node), 201 
 
         else:
@@ -242,6 +244,8 @@ def post_report():
             postgres.commit()
 
             new_node = cursor.fetchone()
+
+            evaluate_report_rules(report_id, value, report_parent)
 
             return jsonify(new_node), 201  
 
@@ -290,21 +294,122 @@ def get_rules():
         postgres.close()
 
 
-@app.route("/post_rules", methods=["POST"])
-def post_rules():
+@app.route("/api/v1/post/report/rules", methods=["POST"])
+def post_rule():
     try:
         postgres = get_db_connection()
         cursor = postgres.cursor(cursor_factory=RealDictCursor)
 
-        return jsonify('undefined')
+        data = request.get_json()
+
+        report_id = data.get('report_id')
+        condition_operator = data.get('condition_operator')
+        threshold = data.get('threshold')
+        action = data.get('action')
+
+        if not report_id or not condition_operator or not threshold or not action:
+            return jsonify({'message': 'All fields (report_id, condition_operator, threshold, action) are required.'}), 400
+
+
+        cursor.execute(
+            "INSERT INTO report_rules (report_id, condition_operator, threshold, action) VALUES (%s, %s, %s, %s) RETURNING *;",
+            (report_id, condition_operator, threshold, action)
+        )
+        postgres.commit()
+
+        new_rule = cursor.fetchone()
+
+        return jsonify(new_rule), 201
 
     except Exception as e:
         print(e)
-        return jsonify({"error": str(e)}), 500  
+        return jsonify({"error": str(e)}), 500
     finally:
         cursor.close()
         postgres.close()
 
+def evaluate_report_rules(report_id, report_value, parent_node_id):
+    try:
+        print(f'report id: {report_id}, value: {report_value}, parent_node:  {parent_node_id}')
+        postgres = get_db_connection()
+        cursor = postgres.cursor(cursor_factory=RealDictCursor)
+
+        cursor.execute("SELECT * FROM report_rules WHERE report_id = %s", (report_id,))
+        rules = cursor.fetchall()
+
+        print(rules)
+        if rules == []: # ! if rules are empty make parent expired
+            print('no rules found')
+            cursor.execute("UPDATE nodes SET status = 'expired' WHERE node_id = %s", (parent_node_id,))
+            postgres.commit()
+
+            return jsonify(message='rules deleted successfully')
+
+        print(f'rules are: {rules}')
+
+        for rule in rules:
+            condition_operator = rule['condition_operator']
+            threshold = rule['threshold']
+            action = rule['action']
+
+            condition_met = False
+            if condition_operator == '<' and report_value < threshold:
+                condition_met = True
+            elif condition_operator == '>' and report_value > threshold:
+                condition_met = True
+            elif condition_operator == '=' and report_value == threshold:
+                condition_met = True
+            elif condition_operator == '<=' and report_value <= threshold:
+                condition_met = True
+            elif condition_operator == '>=' and report_value >= threshold:
+                condition_met = True
+
+            if condition_met: #TODO add more action types in the future.
+                if action == 'set_parent_status_up':
+                    cursor.execute("UPDATE nodes SET status = 'up' WHERE node_id = %s", (parent_node_id,)) 
+                elif action == 'set_parent_status_down':
+                    cursor.execute("UPDATE nodes SET status = 'down' WHERE node_id = %s", (parent_node_id,))
+
+                postgres.commit()
+
+    except Exception as e:
+        print(e)
+    finally:
+        cursor.close()
+        postgres.close()
+
+@app.route("/api/v1/delete/report/rules/<id>", methods=["DELETE"])
+def delete_report_rules(id):
+    try:
+        postgres = get_db_connection()
+        cursor = postgres.cursor(cursor_factory=RealDictCursor)
+
+        data = request.get_json()
+
+        parent_node_id = data.get('parent')
+        report_id = data.get('report_id')
+
+        cursor.execute("delete from report_rules where rule_id = %s", (id,))
+
+        postgres.commit()
+
+        cursor.execute("select * from report_rules where report_id = %s", (report_id,))
+        rules = cursor.fetchall()
+        print(rules)
+        if rules == []: # ! if rules are empty make parent expired
+            print('no rules found')
+            cursor.execute("UPDATE nodes SET status = 'expired' WHERE node_id = %s", (parent_node_id,))
+            postgres.commit()
+
+            return jsonify(message='rules deleted successfully'),200
+
+        return jsonify(message='rule deleted successfully'),200
+
+    except Exception as e:
+        print(e)
+    finally:
+        cursor.close()
+        postgres.close()
 
 if __name__ == "__main__":
     app.run(debug=True, port=80) #TODO when app is ready, change debug to false.

@@ -17,3 +17,12 @@ create table reports (
 	value INTEGER,
 	time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE report_rules (
+    rule_id SERIAL PRIMARY KEY,
+    report_id VARCHAR(50) NOT NULL,
+    condition_operator VARCHAR(10) NOT NULL, 
+    threshold INTEGER NOT NULL,
+    action VARCHAR(50) NOT NULL, 
+    time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

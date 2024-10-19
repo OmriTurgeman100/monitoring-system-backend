@@ -5,7 +5,7 @@ import psycopg2
 from constants import DB_HOST, DB_NAME, DB_USER, DB_PASS 
 
 app = Flask(__name__)
-
+# * config
 def get_db_connection():
     postgres = psycopg2.connect(
         host=DB_HOST,
@@ -15,6 +15,7 @@ def get_db_connection():
     )
     return postgres
 
+# * nodes
 @app.route("/api/v1/root_nodes", methods=["GET"])
 def get_nodes():
     try:
@@ -54,7 +55,7 @@ def specified_node(id):
         cursor.close()
         postgres.close()
 
-@app.route("/api/v1/post", methods=["POST"])
+@app.route("/api/v1/post/nodes", methods=["POST"])
 def post_data():
     try:
         postgres = get_db_connection()
@@ -91,6 +92,28 @@ def post_data():
         cursor.close()
         postgres.close()
 
+
+@app.route("/api/v1/delete/node/<id>", methods=["DELETE"]) # TODO make that you can't delete nodes if they have rules under them. 
+def delete_node(id):
+    try:
+        print(type(id))
+        postgres = get_db_connection()
+        cursor = postgres.cursor(cursor_factory=RealDictCursor)
+        
+        cursor.execute("delete from nodes where node_id = %s", (id,))
+
+        postgres.commit()
+
+        return jsonify({"message": "Node deleted successfully"}), 200
+
+    except Exception as e:
+        print(e)
+        return jsonify({"error": str(e)}), 500  
+    finally:
+        cursor.close()
+        postgres.close()     
+
+# ? reports
 @app.route("/api/v1/get/reports", methods=["GET"]) 
 def get_reports():
     try:
@@ -108,7 +131,6 @@ def get_reports():
     finally:
         cursor.close()
         postgres.close()
-
 
 @app.route("/api/v1/get/reports/distinct", methods=["GET"])
 def distinct_reports():
@@ -129,7 +151,7 @@ def distinct_reports():
         postgres.close()
 
 
-@app.route("/api/v1/post/reports", methods=["POST"]) 
+@app.route("/api/v1/post/reports", methods=["POST"])  #* post
 def post_report():
     try:
         postgres = get_db_connection()
@@ -146,14 +168,14 @@ def post_report():
         cursor.execute("SELECT * FROM nodes WHERE parent = %s", (parent,))
         response = cursor.fetchone()
 
-        if parent and response != None:
+        if parent and response != None: # ! if it will find a node with same parent throw an error, can't have nodes and report in the same place.
             return jsonify('Cannot create report: a node with the same parent already exists')
         elif parent:
 
             cursor.execute("SELECT * FROM reports WHERE report_id = %s", (report_id,))
             response = cursor.fetchall()
 
-            if response:
+            if response: # * checking if the report posted is already attached to other parent .
                 for report in response:
                     if report['parent'] is not None and report['parent'] != parent:
                         return jsonify({'message': 'Report can be associated only to 1 parent'}), 400
@@ -200,8 +222,8 @@ def post_report():
         cursor.close()
         postgres.close()
     
-# * rules
-@app.route("/get_rules", methpds=["GET"])
+# * rules 
+@app.route("/get_rules", methods=["GET"]) # TODO: make rules be evaluated each time a new report is being posted.
 def get_rules():
     try:
         postgres = get_db_connection()
@@ -218,7 +240,7 @@ def get_rules():
 
 
 
-@app.route("/post_rules", methods=["GET"])
+@app.route("/post_rules", methods=["POST"])
 def post_rules():
     try:
         postgres = get_db_connection()
@@ -234,7 +256,6 @@ def post_rules():
         postgres.close()
 
 
-
 if __name__ == "__main__":
-    app.run(debug=True, port=80)
+    app.run(debug=True, port=80) #TODO when app is ready, change debug to false.
 

@@ -5,8 +5,8 @@ import psycopg2
 from constants import DB_HOST, DB_NAME, DB_USER, DB_PASS 
 
 app = Flask(__name__)
-# * config
-def get_db_connection():
+
+def get_db_connection(): # * config
     postgres = psycopg2.connect(
         host=DB_HOST,
         database=DB_NAME,
@@ -14,6 +14,10 @@ def get_db_connection():
         password=DB_PASS
     )
     return postgres
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return jsonify(message='Undefined route, 404'), 404
 
 # * nodes
 @app.route("/api/v1/root_nodes", methods=["GET"])
@@ -117,7 +121,6 @@ def delete_node(id):
 @app.route("/api/v1/get/reports", methods=["GET"]) 
 def get_reports():
     try:
-
         postgres = get_db_connection()
         cursor = postgres.cursor(cursor_factory=RealDictCursor)
 
@@ -169,7 +172,7 @@ def post_report():
         response = cursor.fetchone()
 
         if parent and response != None: # ! if it will find a node with same parent throw an error, can't have nodes and report in the same place.
-            return jsonify('Cannot create report: a node with the same parent already exists')
+            return jsonify({'message': 'Cannot create report: a node with the same parent already exists'}), 400
         elif parent:
 
             cursor.execute("SELECT * FROM reports WHERE report_id = %s", (report_id,))
@@ -179,6 +182,15 @@ def post_report():
                 for report in response:
                     if report['parent'] is not None and report['parent'] != parent:
                         return jsonify({'message': 'Report can be associated only to 1 parent'}), 400
+            
+            cursor.execute("SELECT * FROM reports WHERE parent = %s", (parent,))
+            reports_with_specified_parent = cursor.fetchall()
+
+            if reports_with_specified_parent:
+                for report in reports_with_specified_parent:
+                    if report['parent'] is not None and report['report_id'] != report_id:  
+                        print(report)     
+                        return jsonify({'message': 'Only 1 report can be under a specified node'}), 400
 
             cursor.execute(
                 "INSERT INTO reports (report_id, title, description, parent, value) VALUES (%s, %s, %s, %s, %s) RETURNING *;",
@@ -237,7 +249,6 @@ def get_rules():
     finally:
         cursor.close()
         postgres.close()
-
 
 
 @app.route("/post_rules", methods=["POST"])

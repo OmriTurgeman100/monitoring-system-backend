@@ -4,6 +4,7 @@ create table nodes (
 	title VARCHAR(50) NOT NULL,
 	description VARCHAR(50) NOT NULL,
 	status VARCHAR(50) DEFAULT 'expired',
+    excluded VARCHAR(50) DEFAULT 'false',
 	time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

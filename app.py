@@ -97,8 +97,8 @@ def post_data():
         postgres.close()
 
 
-@app.route("/api/v1/delete/node/<id>", methods=["DELETE"]) # TODO make that you can't delete nodes if they have rules under them. 
-def delete_node(id):
+@app.route("/api/v1/delete/node/<id>", methods=["DELETE"]) #! delete
+def delete_node(id): # TODO make that you can't delete nodes if they have rules under them. 
     try:
         print(type(id))
         postgres = get_db_connection()
@@ -135,16 +135,34 @@ def get_reports():
         cursor.close()
         postgres.close()
 
-@app.route("/api/v1/get/reports/distinct", methods=["GET"])
+@app.route("/api/v1/get/reports/distinct/null", methods=["GET"])
 def distinct_reports():
     try:
         postgres = get_db_connection()
         cursor = postgres.cursor(cursor_factory=RealDictCursor)
 
-        cursor.execute("select distinct(report_id), title, description from reports where parent is null");
+        cursor.execute("select distinct(report_id), title, description, parent from reports where parent is null");
         response = cursor.fetchall()
         
-        return jsonify(response)
+        return jsonify(response), 200
+        
+    except Exception as e:
+        print(e)
+        return jsonify({"error": str(e)}), 500  
+    finally:
+        cursor.close()
+        postgres.close()
+
+@app.route("/api/v1/get/reports/distinct/parent", methods=["GET"])
+def distinct_reports_parent():
+    try:
+        postgres = get_db_connection()
+        cursor = postgres.cursor(cursor_factory=RealDictCursor)
+
+        cursor.execute("select distinct(report_id), title, description, parent from reports where parent is not null");
+        response = cursor.fetchall()
+        
+        return jsonify(response), 200
         
     except Exception as e:
         print(e)
@@ -233,6 +251,27 @@ def post_report():
     finally:
         cursor.close()
         postgres.close()
+
+
+@app.route("/api/v1/delete/report/<id>", methods=["DELETE"]) # ! delete
+def delete_reports(id):
+    try:
+        postgres = get_db_connection()
+        cursor = postgres.cursor(cursor_factory=RealDictCursor)
+
+        cursor.execute("delete from reports where report_id = %s", (id,))
+
+        postgres.commit()
+
+        return jsonify({"message": "Node deleted successfully"}), 200
+
+    except Exception as e:
+        print(e)
+        return jsonify({"error": str(e)}), 500  
+    finally:
+        cursor.close()
+        postgres.close()
+
     
 # * rules 
 @app.route("/get_rules", methods=["GET"]) # TODO: make rules be evaluated each time a new report is being posted.

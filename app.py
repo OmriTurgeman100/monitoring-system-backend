@@ -34,9 +34,9 @@ def time():
     try:
         # current_time = datetime.now().strftime("%H:%M:%S")
         # current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        isral_time_and_date = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+        israel_time_and_date = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
-        return jsonify(time=isral_time_and_date)
+        return jsonify(time=israel_time_and_date)
     except Exception as e:
         print(e)
         return jsonify({"error": str(e)}), 500  

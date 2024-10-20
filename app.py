@@ -1,5 +1,6 @@
 
 from flask import Flask, jsonify, redirect, render_template, request
+import json
 from flask_cors import CORS
 from psycopg2.extras import RealDictCursor
 from datetime import datetime
@@ -415,6 +416,7 @@ def evaluate_report_rules(report_id, report_value, parent_node_id):
 
     except Exception as e:
         print(e)
+        return jsonify({"error": str(e)}), 500
     finally:
         cursor.close()
         postgres.close()
@@ -448,9 +450,127 @@ def delete_report_rules(id):
 
     except Exception as e:
         print(e)
+        return jsonify({"error": str(e)}), 500
     finally:
         cursor.close()
         postgres.close()
+# * node rules
+
+# * post
+@app.route("/api/v1/post/node/rules/<id>", methods=["POST"])
+def post_node_rules(id):
+    try:
+        print(id)
+        postgres = get_db_connection()
+        cursor = postgres.cursor(cursor_factory=RealDictCursor)
+        
+        data = request.get_json()
+
+        if not data:
+            return jsonify(message='no data in body'),404
+        
+        conditions = data.get('conditions')
+        action = data.get('action')
+        jsoned_conditions = json.dumps(conditions)
+
+        if not conditions or not action:
+            return jsonify(message='must provide action and conditions'), 400
+
+        cursor.execute(
+            "INSERT INTO node_rules (parent_node_id, conditions, action) VALUES (%s, %s, %s) RETURNING *;",
+            (id, jsoned_conditions, action)
+        )
+
+        postgres.commit()
+        new_rule = cursor.fetchone()
+        return jsonify(new_rule), 201  
+
+    except Exception as e:
+        print(e)
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        postgres.close()
+
+
+# @app.route("/api/v1/nodes/<node_id>/rules/evaluate", methods=["GET"])
+# def evaluate_node_rules(node_id):
+#     try:
+#         postgres = get_db_connection()
+#         cursor = postgres.cursor(cursor_factory=RealDictCursor)
+
+#         # Fetch the child nodes
+#         cursor.execute("SELECT * FROM nodes WHERE parent = %s", (node_id,))
+#         child_nodes = cursor.fetchall()
+
+#         # Fetch the rules for this node
+#         cursor.execute("SELECT * FROM node_rules WHERE parent_node_id = %s", (node_id,))
+#         rules = cursor.fetchall()
+
+#         for rule in rules:
+#             # Here, 'conditions' is already stored as a JSON string in the database,
+#             # so no need to use json.loads() if it's already a valid JSON object
+#             conditions = rule['conditions']
+#             action = rule['action']
+            
+#             # Evaluate the conditions
+#             if evaluate_conditions(child_nodes, conditions):  # Directly pass conditions
+#                 # Perform the action based on the rule
+#                 if action == "make parent up":
+#                     cursor.execute("UPDATE nodes SET status = 'up' WHERE node_id = %s", (node_id,))
+#                 elif action == "make parent down":
+#                     cursor.execute("UPDATE nodes SET status = 'down' WHERE node_id = %s", (node_id,))
+#                 elif action == "make parent critical":
+#                     cursor.execute("UPDATE nodes SET status = 'critical' WHERE node_id = %s", (node_id,))
+#                 # Add more actions as needed
+
+#         postgres.commit()
+#         return jsonify({"message": "Rules evaluated successfully"}), 200
+
+#     except Exception as e:
+#         print(e)
+#         return jsonify({"error": str(e)}), 500  
+#     finally:
+#         cursor.close()
+#         postgres.close()
+
+# # Recursive condition evaluation function
+# def evaluate_conditions(child_nodes, conditions):
+
+#     node_statuses = {node['node_id']: node['status'] for node in child_nodes}
+
+#     def evaluate_condition_group(condition_group):
+#         operator = condition_group['operator']
+#         group_conditions = condition_group['conditions']
+        
+#         results = []
+#         for cond in group_conditions:
+#             # Check if the current condition is a nested condition group
+#             if 'operator' in cond and 'conditions' in cond:
+#                 # Recursively evaluate nested condition group
+#                 results.append(evaluate_condition_group(cond))
+#             else:
+#                 # Evaluate a simple condition
+#                 node_id = cond['node_id']
+#                 expected_status = cond['status']
+#                 actual_status = node_statuses.get(node_id)
+
+#                 # Compare statuses
+#                 if actual_status is not None:
+#                     results.append(actual_status == expected_status)
+#                 else:
+#                     results.append(False)  # If node_id not found, consider it as failed condition
+
+#         # Apply the operator
+#         if operator == "AND":
+#             return all(results)
+#         elif operator == "OR":
+#             return any(results)
+
+#     # Evaluate the top-level conditions
+#     return evaluate_condition_group(conditions[0])
+
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=80) #TODO when app is ready, change debug to false.

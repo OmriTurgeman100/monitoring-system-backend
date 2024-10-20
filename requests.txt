@@ -1,4 +1,4 @@
-POST http://127.0.0.1/api/v1/post/rules
+POST localhost/api/v1/post/report/rules
 Content-Type: application/json
 
 {
@@ -8,7 +8,7 @@ Content-Type: application/json
     "action": "set_parent_status_down"
 }
 
-POST http://127.0.0.1/api/v1/post/rules
+POST localhost/api/v1/post/report/rules
 Content-Type: application/json
 
 {
@@ -17,3 +17,4 @@ Content-Type: application/json
     "threshold": 50,
     "action": "set_parent_status_up"
 }
+

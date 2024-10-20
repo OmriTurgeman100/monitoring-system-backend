@@ -492,7 +492,7 @@ def post_node_rules(id):
         cursor.close()
         postgres.close()
 
-# * get specific rule
+# * get specific node rule
 @app.route("/api/v1/get/node/rules/<id>", methods=["GET"])
 def get_specific_node_rule(id):
     try:

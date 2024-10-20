@@ -26,3 +26,11 @@ CREATE TABLE report_rules (
     action VARCHAR(50) NOT NULL, 
     time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE node_rules (  -- ! optional, for future test.
+    rule_id SERIAL PRIMARY KEY,
+    parent_node_id INTEGER REFERENCES nodes(node_id) ON DELETE CASCADE,
+    conditions JSONB NOT NULL,  -- Store the condition JSON structure
+    action VARCHAR(50) NOT NULL,
+    time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

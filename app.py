@@ -1,5 +1,6 @@
 
 from flask import Flask, jsonify, redirect, render_template, request
+from flask_cors import CORS
 from psycopg2.extras import RealDictCursor
 from datetime import datetime
 import psycopg2  
@@ -7,14 +8,21 @@ from constants import DB_HOST, DB_NAME, DB_USER, DB_PASS
 
 app = Flask(__name__)
 
+CORS(app)
+
 def get_db_connection(): # * config
-    postgres = psycopg2.connect(
-        host=DB_HOST,
-        database=DB_NAME,
-        user=DB_USER,
-        password=DB_PASS
-    )
-    return postgres
+    try:
+        
+        postgres = psycopg2.connect(
+            host=DB_HOST,
+            database=DB_NAME,
+            user=DB_USER,
+            password=DB_PASS
+        )
+        return postgres
+    
+    except Exception as e:
+        print(e)
 
 @app.errorhandler(404)
 def page_not_found(e):

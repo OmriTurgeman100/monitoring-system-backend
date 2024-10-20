@@ -12,7 +12,7 @@ CORS(app)
 
 def get_db_connection(): # * config
     try:
-        
+
         postgres = psycopg2.connect(
             host=DB_HOST,
             database=DB_NAME,
@@ -150,6 +150,24 @@ def get_reports():
         response = cursor.fetchall()
 
         return jsonify(response)
+    except Exception as e:
+        print(e)
+        return jsonify({"error": str(e)}), 500  
+    finally:
+        cursor.close()
+        postgres.close()
+
+@app.route("/api/v1/report/graph/<id>", methods=["GET"])
+def report_graph(id):
+    try:
+        postgres = get_db_connection()
+        cursor = postgres.cursor(cursor_factory=RealDictCursor)
+
+        cursor.execute("select * from reports where report_id = %s order by time desc", (id,))
+        tiime_series_report = cursor.fetchall()
+
+        return jsonify(tiime_series_report),200
+
     except Exception as e:
         print(e)
         return jsonify({"error": str(e)}), 500  

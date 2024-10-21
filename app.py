@@ -101,7 +101,7 @@ def post_data():
         print(nodes)
 
         if parent and nodes:
-            return jsonify(message="Cannot create node: a report with the same parent already exists.")
+            return jsonify(message="Cannot create node: a report with the same parent already exists."),400
 
         cursor.execute(
             "INSERT INTO nodes (title, description, parent) VALUES (%s, %s, %s) RETURNING *;",

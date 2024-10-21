@@ -30,7 +30,7 @@ CREATE TABLE report_rules (
 CREATE TABLE node_rules (  -- ! optional, for future test.
     rule_id SERIAL PRIMARY KEY,
     parent_node_id INTEGER REFERENCES nodes(node_id) ON DELETE CASCADE,
-    conditions JSONB NOT NULL,  -- Store the condition JSON structure
+    conditions JSONB NOT NULL,  
     action VARCHAR(50) NOT NULL,
     time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

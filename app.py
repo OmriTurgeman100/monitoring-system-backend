@@ -412,6 +412,8 @@ def evaluate_report_rules(report_id, report_value, parent_node_id):
                     cursor.execute("UPDATE nodes SET status = 'up' WHERE node_id = %s", (parent_node_id,)) 
                 elif action == 'set_parent_status_down':
                     cursor.execute("UPDATE nodes SET status = 'down' WHERE node_id = %s", (parent_node_id,))
+                elif action == 'set_parent_status_critical':
+                    cursor.execute("UPDATE nodes SET status = 'critical' WHERE node_id = %s", (parent_node_id,))
 
                 postgres.commit()
 

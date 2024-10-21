@@ -5,7 +5,8 @@ from flask_cors import CORS
 from psycopg2.extras import RealDictCursor
 from datetime import datetime
 import psycopg2  
-from constants import DB_HOST, DB_NAME, DB_USER, DB_PASS 
+from constants import DB_HOST, DB_NAME, DB_USER, DB_PASS
+import time
 
 app = Flask(__name__)
 
@@ -31,7 +32,7 @@ def page_not_found(e):
 
 # * time 
 @app.route("/get_time", methods=["GET"]) 
-def time():
+def get_time():
     try:
         # current_time = datetime.now().strftime("%H:%M:%S")
         # current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -456,8 +457,7 @@ def delete_report_rules(id):
         postgres.close()
 # * node rules
 
-# * post
-@app.route("/api/v1/post/node/rules/<id>", methods=["POST"])
+@app.route("/api/v1/post/node/rules/<id>", methods=["POST"]) # * post
 def post_node_rules(id):
     try:
         print(id)
@@ -510,6 +510,71 @@ def get_specific_node_rule(id):
         cursor.close()
         postgres.close()
 
+
+@app.route("/api/v1/nodes/<id>/rules/evaluate", methods=["GET"])
+def evaluate_node_rules(id):
+    try:
+        postgres = get_db_connection()
+        cursor = postgres.cursor(cursor_factory=RealDictCursor)
+
+        cursor.execute('select * from nodes where parent = %s', (id,))
+        sub_nodes =  cursor.fetchall()
+ 
+        cursor.execute('select * from node_rules where parent_node_id = %s', (id,))
+        rules = cursor.fetchall()
+
+
+        nodes_and_their_status = {node['node_id']: node['status'] for node in sub_nodes}
+
+        rules_examined = 0
+        for rule in rules:
+            condition = rule['conditions']
+            action = rule['action']
+            evaluate_rules(condition, action, nodes_and_their_status)
+            rules_examined += 1
+            time.sleep(100)
+
+        print(f'examined rules: {rules_examined}')
+        return jsonify(message="test"), 200
+        
+
+    except Exception as e:
+        print(e)
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        postgres.close()
+
+
+def evaluate_rules(conditon, action, nodes_and_their_status):
+    # print(f'conditon: {conditon}')
+
+    # print(f'action: {action}')
+
+    # print(f'nodes_and_their_status: {nodes_and_their_status}')
+
+    operator = conditon['operator']
+    node_conditions = conditon['conditions']
+
+
+    print(operator)
+    print(nodes_and_their_status)
+    print(node_conditions)
+
+    # if operator == 'AND':
+    #     results = all()
+    
+    # elif operator == 'OR':
+    #     print('or scope')
+        
+
+
+
+ 
+
+
+
+    # operator = 
 
 # @app.route("/api/v1/nodes/<node_id>/rules/evaluate", methods=["GET"])
 # def evaluate_node_rules(node_id):

@@ -319,7 +319,7 @@ def delete_reports(id):
         postgres.close()
 
     
-# * rules 
+# * report rules 
 @app.route("/api/v1/get/rules/<id>", methods=["GET"])
 def get_specific_report_rules(id):
     try:
@@ -455,8 +455,8 @@ def delete_report_rules(id):
     finally:
         cursor.close()
         postgres.close()
-# * node rules
 
+# * node rules
 @app.route("/api/v1/post/node/rules/<id>", methods=["POST"]) # * post
 def post_node_rules(id):
     try:
@@ -511,7 +511,7 @@ def get_specific_node_rule(id):
         postgres.close()
 
 
-@app.route("/api/v1/nodes/<id>/rules/evaluate", methods=["GET"])
+@app.route("/api/v1/nodes/evaluate/rules/<id>", methods=["GET"])
 def evaluate_node_rules(id):
     try:
         postgres = get_db_connection()
@@ -526,18 +526,34 @@ def evaluate_node_rules(id):
 
         nodes_and_their_status = {node['node_id']: node['status'] for node in sub_nodes}
 
-        rules_examined = 0
         for rule in rules:
             condition = rule['conditions']
             action = rule['action']
-            evaluate_rules(condition, action, nodes_and_their_status)
-            rules_examined += 1
-            time.sleep(100)
+            if evaluate_rules(condition, action, nodes_and_their_status): # * return true if there is a match.
 
-        print(f'examined rules: {rules_examined}')
-        return jsonify(message="test"), 200
+                if action == "set_parent_status_up":
+
+                    cursor.execute("update nodes set status = 'up' where node_id = %s", (id,))
+                    postgres.commit()
+
+                    return jsonify(message='rules evaluated successfully')
+
+                elif action == "set_parent_status_down":
+
+                    cursor.execute("update nodes set status = 'down' where node_id = %s", (id,))
+                    postgres.commit()
+
+                    return jsonify(message='rules evaluated successfully')
+
+                elif action == "set_parent_status_critical":
+
+                    cursor.execute("update nodes set status = 'down' where node_id = %s", (id,))
+                    postgres.commit()
+
+                    return jsonify(message='rules evaluated successfully')
+
+        return jsonify(message="no rules evaluated"), 200
         
-
     except Exception as e:
         print(e)
         return jsonify({"error": str(e)}), 500
@@ -546,114 +562,46 @@ def evaluate_node_rules(id):
         postgres.close()
 
 
-def evaluate_rules(conditon, action, nodes_and_their_status):
-    # print(f'conditon: {conditon}')
+def evaluate_rules(condition, action, nodes_and_their_status):
+    operator = condition['operator']
+    node_conditions = condition['conditions']
 
-    # print(f'action: {action}')
+    print(f"Operator: {operator}")
+    print(f"Nodes and their status: {nodes_and_their_status}")
+    print(f"Node conditions: {node_conditions}")
 
-    # print(f'nodes_and_their_status: {nodes_and_their_status}')
+    if operator == 'AND':
+        # Check if all conditions are met
+        result = all(nodes_and_their_status.get(cond['node_id']) == cond['status'] for cond in node_conditions)
+        print("All conditions met:", result)
+        return result
 
-    operator = conditon['operator']
-    node_conditions = conditon['conditions']
-
-
-    print(operator)
-    print(nodes_and_their_status)
-    print(node_conditions)
-
-    # if operator == 'AND':
-    #     results = all()
+    elif operator == 'OR':
+        # Check if any condition is met
+        result = any(nodes_and_their_status.get(cond['node_id']) == cond['status'] for cond in node_conditions)
+        print("At least one condition met:", result)
+        return result
     
-    # elif operator == 'OR':
-    #     print('or scope')
-        
 
+# ! delete node rule
+@app.route("/api/v1/delete/node/rule/<id>", methods=["DELETE"])
+def delete_node_rules(id):
+    try:
+        postgres = get_db_connection()
+        cursor = postgres.cursor(cursor_factory=RealDictCursor)
 
+        cursor.execute("delete from node_rules where rule_id = %s ", (id))
+        postgres.commit()
 
- 
+        return jsonify(message='rules deleted successfully')
 
-
-
-    # operator = 
-
-# @app.route("/api/v1/nodes/<node_id>/rules/evaluate", methods=["GET"])
-# def evaluate_node_rules(node_id):
-#     try:
-#         postgres = get_db_connection()
-#         cursor = postgres.cursor(cursor_factory=RealDictCursor)
-
-#         # Fetch the child nodes
-#         cursor.execute("SELECT * FROM nodes WHERE parent = %s", (node_id,))
-#         child_nodes = cursor.fetchall()
-
-#         # Fetch the rules for this node
-#         cursor.execute("SELECT * FROM node_rules WHERE parent_node_id = %s", (node_id,))
-#         rules = cursor.fetchall()
-
-#         for rule in rules:
-#             # Here, 'conditions' is already stored as a JSON string in the database,
-#             # so no need to use json.loads() if it's already a valid JSON object
-#             conditions = rule['conditions']
-#             action = rule['action']
-            
-#             # Evaluate the conditions
-#             if evaluate_conditions(child_nodes, conditions):  # Directly pass conditions
-#                 # Perform the action based on the rule
-#                 if action == "make parent up":
-#                     cursor.execute("UPDATE nodes SET status = 'up' WHERE node_id = %s", (node_id,))
-#                 elif action == "make parent down":
-#                     cursor.execute("UPDATE nodes SET status = 'down' WHERE node_id = %s", (node_id,))
-#                 elif action == "make parent critical":
-#                     cursor.execute("UPDATE nodes SET status = 'critical' WHERE node_id = %s", (node_id,))
-#                 # Add more actions as needed
-
-#         postgres.commit()
-#         return jsonify({"message": "Rules evaluated successfully"}), 200
-
-#     except Exception as e:
-#         print(e)
-#         return jsonify({"error": str(e)}), 500  
-#     finally:
-#         cursor.close()
-#         postgres.close()
-
-# # Recursive condition evaluation function
-# def evaluate_conditions(child_nodes, conditions):
-
-#     node_statuses = {node['node_id']: node['status'] for node in child_nodes}
-
-#     def evaluate_condition_group(condition_group):
-#         operator = condition_group['operator']
-#         group_conditions = condition_group['conditions']
-        
-#         results = []
-#         for cond in group_conditions:
-#             # Check if the current condition is a nested condition group
-#             if 'operator' in cond and 'conditions' in cond:
-#                 # Recursively evaluate nested condition group
-#                 results.append(evaluate_condition_group(cond))
-#             else:
-#                 # Evaluate a simple condition
-#                 node_id = cond['node_id']
-#                 expected_status = cond['status']
-#                 actual_status = node_statuses.get(node_id)
-
-#                 # Compare statuses
-#                 if actual_status is not None:
-#                     results.append(actual_status == expected_status)
-#                 else:
-#                     results.append(False)  # If node_id not found, consider it as failed condition
-
-#         # Apply the operator
-#         if operator == "AND":
-#             return all(results)
-#         elif operator == "OR":
-#             return any(results)
-
-#     # Evaluate the top-level conditions
-#     return evaluate_condition_group(conditions[0])
-
-
+    except Exception as e:
+        print(e)
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        postgres.close()
+    
 
 if __name__ == "__main__":
     app.run(debug=True, port=80) #TODO when app is ready, change debug to false.

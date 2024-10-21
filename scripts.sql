@@ -27,7 +27,7 @@ CREATE TABLE report_rules (
     time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE node_rules (  -- ! optional, for future test.
+CREATE TABLE node_rules (  
     rule_id SERIAL PRIMARY KEY,
     parent_node_id INTEGER REFERENCES nodes(node_id) ON DELETE CASCADE,
     conditions JSONB NOT NULL,  

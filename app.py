@@ -26,9 +26,9 @@ def get_db_connection(): # * config
     except Exception as e:
         print(e)
 
-@app.errorhandler(404)
-def page_not_found(e):
-    return jsonify(message='Undefined route, 404'), 404
+# @app.errorhandler(404)
+# def page_not_found(e):
+#     return jsonify(message='Undefined route, 404'), 404 # * this code causes this error: Undefined route, 404.
 
 # * time 
 @app.route("/get_time", methods=["GET"]) 

@@ -299,7 +299,7 @@ def post_report():
         postgres.close()
 
 
-@app.route("/api/v1/delete/report/<id>", methods=["DELETE"]) # ! delete
+@app.route("/api/v1/delete/report/<id>", methods=["DELETE"]) # ! delete the entire report!
 def delete_reports(id):
     try:
         postgres = get_db_connection()
@@ -314,6 +314,25 @@ def delete_reports(id):
     except Exception as e:
         print(e)
         return jsonify({"error": str(e)}), 500  
+    finally:
+        cursor.close()
+        postgres.close()
+
+@app.route("/api/v1/remove/report/null/<id>", methods=["PATCH"]) #TODO check if report has rules before allowing to remove him
+def set_report_to_null(id):
+    try:
+        postgres = get_db_connection()
+        cursor = postgres.cursor(cursor_factory=RealDictCursor)
+
+        cursor.execute("update reports set parent = null where report_id = %s", (id,))  
+
+        postgres.commit()
+
+        return jsonify(message='report removed successfully'), 204
+
+    except Exception as e:
+        print(e)
+        return jsonify({"error": str(e)}), 500
     finally:
         cursor.close()
         postgres.close()
@@ -333,6 +352,7 @@ def get_specific_report_rules(id):
 
     except Exception as e:
         print(e)
+        return jsonify({"error": str(e)}), 500
     finally:
         cursor.close()
         postgres.close()

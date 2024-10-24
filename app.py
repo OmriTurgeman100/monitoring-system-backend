@@ -83,6 +83,27 @@ def specified_node(id):
         cursor.close()
         postgres.close()
 
+@app.route("/api/v1/node/name/<id>", methods=["GET"])
+def get_node_name(id):
+    try:
+        postgres = get_db_connection()
+        cursor = postgres.cursor(cursor_factory=RealDictCursor)
+
+        cursor.execute("select distinct(title) from nodes where node_id = %s", (id,))
+        specified_node_name = cursor.fetchone()
+
+
+        return jsonify(specified_node_name), 200
+
+    except Exception as e:
+        print(e)
+        return jsonify({"error": str(e)}), 500  
+    finally:
+        cursor.close()
+        postgres.close()
+
+
+
 @app.route("/api/v1/post/nodes", methods=["POST"])
 def post_data():
     try:

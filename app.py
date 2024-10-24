@@ -521,12 +521,13 @@ def get_specific_node_rule(id):
         postgres = get_db_connection()
         cursor = postgres.cursor(cursor_factory=RealDictCursor)
 
-        cursor.execute("select * from node_rules where parent_node_id = %s ", (id))
+        cursor.execute("select * from node_rules where parent_node_id = %s", (id,))
         specified_node_rules = cursor.fetchall()
         return jsonify(specified_node_rules), 200
     
     except Exception as e:
         print(e)
+        print('error')
         return jsonify({"error": str(e)}), 500
     finally:
         cursor.close()

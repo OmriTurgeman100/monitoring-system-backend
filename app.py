@@ -613,7 +613,7 @@ def delete_node_rules(id):
         postgres = get_db_connection()
         cursor = postgres.cursor(cursor_factory=RealDictCursor)
 
-        cursor.execute("delete from node_rules where rule_id = %s ", (id))
+        cursor.execute("delete from node_rules where rule_id = %s ", (id,))
         postgres.commit()
 
         return jsonify(message='rules deleted successfully')

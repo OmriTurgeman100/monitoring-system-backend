@@ -18,3 +18,18 @@ Content-Type: application/json
     "action": "set_parent_status_up"
 }
 
+POST localhost/api/v1/post/node/rules/3
+Content-Type: application/json
+
+{
+    "conditions": {
+        "operator": "AND",
+        "conditions": [
+            { "node_id": 5, "status": "critical" },
+            { "node_id": 4, "status": "critical" },
+            { "node_id": 7, "status": "critcal" },
+            { "node_id": 8, "status": "critcal" }
+        ]
+    },
+    "action": "set_parent_status_critical"
+}

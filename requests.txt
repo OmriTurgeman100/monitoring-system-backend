@@ -33,3 +33,17 @@ Content-Type: application/json
     },
     "action": "set_parent_status_critical"
 }
+
+POST localhost/api/v1/post/node/rules/3
+Content-Type: application/json
+
+{
+    "conditions": {
+        "operator": "OR",
+        "conditions": [
+            {"title": "test 1", "node_id": 154, "status": "down" },
+            { "title": "test", "node_id": 155, "status": "down" }
+        ]
+    },
+    "action": "set_parent_status_down"
+}

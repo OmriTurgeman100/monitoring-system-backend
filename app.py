@@ -6,7 +6,7 @@ from psycopg2.extras import RealDictCursor
 from datetime import datetime
 import psycopg2  
 from constants import DB_HOST, DB_NAME, DB_USER, DB_PASS
-import time
+from threading import Thread
 
 app = Flask(__name__)
 
@@ -14,7 +14,6 @@ CORS(app)
 
 def get_db_connection(): # * config
     try:
-
         postgres = psycopg2.connect(
             host=DB_HOST,
             database=DB_NAME,
@@ -606,7 +605,7 @@ def evaluate_node_rules(id):
 
                 elif action == "set_parent_status_critical":
 
-                    cursor.execute("update nodes set status = 'down' where node_id = %s", (id,))
+                    cursor.execute("update nodes set status = 'critical' where node_id = %s", (id,))
                     postgres.commit()
 
                     return jsonify(message='rules evaluated successfully')
@@ -619,7 +618,6 @@ def evaluate_node_rules(id):
     finally:
         cursor.close()
         postgres.close()
-
 
 def evaluate_rules(condition, action, nodes_and_their_status):
     operator = condition['operator']
@@ -641,7 +639,95 @@ def evaluate_rules(condition, action, nodes_and_their_status):
         print("At least one condition met:", result)
         return result
     
+# * threaded functions.
+#! thread usage.
+@app.route("/api/v1/auto/eval/agent/thread", methods=["GET"])
+def thread_eval_agent():
+    try:
+        message = 'rules evaluation process has been started'
 
+        thread = Thread(target=rules_evaluation_thread)
+        thread.start()
+
+        return jsonify(message=message), 200
+
+    except Exception as e:
+        print(e)
+        return jsonify({"error": str(e)}), 500
+    
+def rules_evaluation_thread():
+    try: 
+        postgres = get_db_connection()
+        cursor = postgres.cursor(cursor_factory=RealDictCursor)
+
+        while True:
+            cursor.execute("select distinct (node_id) from nodes")
+            node_ids = cursor.fetchall()
+
+            for item in node_ids:
+                node_id = item['node_id']
+                thread_evaluation(node_id)
+
+    except Exception as e:
+        print(e)
+    finally:
+        cursor.close()
+        postgres.close()
+
+def thread_evaluation(id):
+    try:
+        postgres = get_db_connection()
+        cursor = postgres.cursor(cursor_factory=RealDictCursor)
+
+        cursor.execute('select * from nodes where parent = %s', (id,))
+        sub_nodes =  cursor.fetchall()
+ 
+        cursor.execute('select * from node_rules where parent_node_id = %s', (id,))
+        rules = cursor.fetchall()
+
+
+        nodes_and_their_status = {node['node_id']: node['status'] for node in sub_nodes}
+
+        for rule in rules:
+            condition = rule['conditions']
+            action = rule['action']
+            if threaded_evaluate_rules(condition, action, nodes_and_their_status): # * return true if there is a match.
+
+                if action == "set_parent_status_up":
+
+                    cursor.execute("update nodes set status = 'up' where node_id = %s", (id,))
+                    postgres.commit()
+
+                elif action == "set_parent_status_down":
+
+                    cursor.execute("update nodes set status = 'down' where node_id = %s", (id,))
+                    postgres.commit()
+
+                elif action == "set_parent_status_critical":
+
+                    cursor.execute("update nodes set status = 'critical' where node_id = %s", (id,))
+                    postgres.commit()
+  
+        
+    except Exception as e:
+        print(e)
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        postgres.close()
+
+def threaded_evaluate_rules(condition, action, nodes_and_their_status):
+    operator = condition['operator']
+    node_conditions = condition['conditions']
+
+    if operator == 'AND':
+        result = all(nodes_and_their_status.get(cond['node_id']) == cond['status'] for cond in node_conditions)
+        return result
+
+    elif operator == 'OR':
+        result = any(nodes_and_their_status.get(cond['node_id']) == cond['status'] for cond in node_conditions)
+        return result
+    
 # ! delete node rule
 @app.route("/api/v1/delete/node/rule/<id>", methods=["DELETE"])
 def delete_node_rules(id):
@@ -664,4 +750,5 @@ def delete_node_rules(id):
 
 if __name__ == "__main__":
     app.run(debug=True, port=80) #TODO when app is ready, change debug to false.
+  
 

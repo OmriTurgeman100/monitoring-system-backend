@@ -664,6 +664,28 @@ def delete_node_rules(id):
         cursor.close()
         postgres.close()
     
+@app.route("/api/v1/check/rules/parent/node/<id>", methods=["DELETE"])
+def check_parent_node_rules(id):
+    try:
+        postgres = get_db_connection()
+        cursor = postgres.cursor(cursor_factory=RealDictCursor)
+
+        cursor.execute("select * from node_rules where parent_node_id = %s", (id,))
+        rules_related_to_parent = cursor.fetchone()
+
+        if rules_related_to_parent == None:
+            print(rules_related_to_parent)
+            cursor.execute("update nodes set status = 'expired' where node_id = %s", (id,))
+            postgres.commit()
+
+        return jsonify(message='rules have been evaluated'), 200
+
+    except Exception as e:
+        print(e)
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        postgres.close()
 
 if __name__ == "__main__":
     app.run(debug=True, port=80) #TODO when app is ready, change debug to false.

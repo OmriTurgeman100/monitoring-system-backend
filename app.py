@@ -284,7 +284,7 @@ def post_report():
             if reports_with_specified_parent:
                 for report in reports_with_specified_parent:
                     if report['parent'] is not None and report['report_id'] != report_id:  
-                        print(report)     
+                        # print(report)     
                         return jsonify({'message': 'Only 1 report can be under a specified node'}), 400
 
             cursor.execute(
@@ -306,12 +306,12 @@ def post_report():
 
             report_parent = None
             for item in response:
-                print(item)
+                # print(item)
                 if item['parent'] != None:
                     report_parent = item['parent']
                     break
 
-            print(f'old parent {parent}, new parent {report_parent}')
+            # print(f'old parent {parent}, new parent {report_parent}')
 
             cursor.execute(
                 "INSERT INTO reports (report_id, title, description, parent, value) VALUES (%s, %s, %s, %s, %s) RETURNING *;",
@@ -359,6 +359,10 @@ def set_report_to_null(id):
         postgres = get_db_connection()
         cursor = postgres.cursor(cursor_factory=RealDictCursor)
 
+        cursor.execute("select * from reports where parent is not null and report_id = %s", (id,))
+        report = cursor.fetchone()
+        report_parent = report['parent']
+   
         cursor.execute("update reports set parent = null where report_id = %s", (id,))  
 
         postgres.commit()
@@ -369,6 +373,8 @@ def set_report_to_null(id):
         if rules:
             cursor.execute("delete from report_rules where report_id = %s", (id,))
             postgres.commit()
+
+
 
         return jsonify(message='report removed successfully'), 204
 
@@ -435,22 +441,22 @@ def post_rule():
 
 def evaluate_report_rules(report_id, report_value, parent_node_id):
     try:
-        print(f'report id: {report_id}, value: {report_value}, parent_node:  {parent_node_id}')
+        # print(f'report id: {report_id}, value: {report_value}, parent_node:  {parent_node_id}')
         postgres = get_db_connection()
         cursor = postgres.cursor(cursor_factory=RealDictCursor)
 
         cursor.execute("SELECT * FROM report_rules WHERE report_id = %s", (report_id,))
         rules = cursor.fetchall()
 
-        print(rules)
+        # print(rules)
         if rules == []: # ! if rules are empty make parent expired
-            print('no rules found')
+            # print('no rules found')
             cursor.execute("UPDATE nodes SET status = 'expired' WHERE node_id = %s", (parent_node_id,))
             postgres.commit()
 
             return jsonify(message='rules deleted successfully')
 
-        print(f'rules are: {rules}')
+        # print(f'rules are: {rules}')
 
         for rule in rules:
             condition_operator = rule['condition_operator']
@@ -503,9 +509,9 @@ def delete_report_rules(id):
 
         cursor.execute("select * from report_rules where report_id = %s", (report_id,))
         rules = cursor.fetchall()
-        print(rules)
+        # print(rules)
         if rules == []: # ! if rules are empty make parent expired
-            print('no rules found')
+            # print('no rules found')
             cursor.execute("UPDATE nodes SET status = 'expired' WHERE node_id = %s", (parent_node_id,))
             postgres.commit()
 
@@ -524,7 +530,7 @@ def delete_report_rules(id):
 @app.route("/api/v1/post/node/rules/<id>", methods=["POST"]) # * post
 def post_node_rules(id):
     try:
-        print(id)
+        # print(id)
         postgres = get_db_connection()
         cursor = postgres.cursor(cursor_factory=RealDictCursor)
         
@@ -681,7 +687,7 @@ def check_parent_node_rules(id):
         rules_related_to_parent = cursor.fetchone()
 
         if rules_related_to_parent == None:
-            print(rules_related_to_parent)
+            # print(rules_related_to_parent)
             cursor.execute("update nodes set status = 'expired' where node_id = %s", (id,))
             postgres.commit()
 

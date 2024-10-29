@@ -374,7 +374,9 @@ def set_report_to_null(id):
             cursor.execute("delete from report_rules where report_id = %s", (id,))
             postgres.commit()
 
-
+        if report_parent:
+            cursor.execute("update nodes set status = 'expired' where node_id = %s", (report_parent,))
+            postgres.commit()
 
         return jsonify(message='report removed successfully'), 204
 

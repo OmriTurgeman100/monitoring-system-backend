@@ -363,6 +363,13 @@ def set_report_to_null(id):
 
         postgres.commit()
 
+        cursor.execute("select * from report_rules where report_id = %s", (id,))
+        rules = cursor.fetchone()
+        
+        if rules:
+            cursor.execute("delete from report_rules where report_id = %s", (id,))
+            postgres.commit()
+
         return jsonify(message='report removed successfully'), 204
 
     except Exception as e:

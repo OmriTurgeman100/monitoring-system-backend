@@ -38,4 +38,4 @@ def black_box_script():
 
 while True:
     black_box_script()
-    time.sleep(1)
+    # time.sleep(1)

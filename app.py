@@ -648,8 +648,8 @@ def rules_evaluation_thread(): #TODO , consider making it run as a threaded proc
 
             for item in node_ids:
                 node_id = item['node_id']
-                thread_evaluation(node_id)
-
+                thread_evaluation(node_id) # TODO might want to use threads, consider using it in the future.
+                
     except Exception as e:
         print(e)
     finally:

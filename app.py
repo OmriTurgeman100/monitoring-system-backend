@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, redirect, render_template, request
+from flask import Flask, jsonify, request
 import json
 from flask_cors import CORS
 from psycopg2.extras import RealDictCursor

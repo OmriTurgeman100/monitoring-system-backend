@@ -1,5 +1,6 @@
 import subprocess
 from multiprocessing import Process
+from threading import Thread
 
 scripts = [
     "script_one.py",
@@ -11,11 +12,11 @@ def run_script(script_name):
     subprocess.Popen(["python", script_name])
 
 if __name__ == "__main__":
-    processes = []
+    threads = []
     for script in scripts:
-        process = Process(target=run_script, args=(script,))
-        process.start()
-        processes.append(process)
+        thread = Thread(target=run_script, args=(script,))
+        thread.start()
+        threads.append(thread)
 
-    for process in processes:
-        process.join()
+    for thread in threads:
+        thread.join()

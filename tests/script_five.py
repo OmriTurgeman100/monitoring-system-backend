@@ -72,7 +72,9 @@ if __name__ == "__main__":
             process.start()
             processes.append(process)
 
-            totoal_report = f"{address}, {ip}"
+            totoal_report = f'"{address}, {ip}",'
+            print(totoal_report)
+            
             data.append(totoal_report)
 
         for process in processes:

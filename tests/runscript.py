@@ -7,6 +7,8 @@ scripts = [
     "script_two.py",
     "script_three.py",
     "script_four.py",
+    "script_five.py",
+    
 ]
 
 def run_script(script_name):

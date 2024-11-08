@@ -11,6 +11,7 @@ logging.basicConfig(level=logging.INFO, filename="log.log", filemode="a")
 def ping(report_name, ip):
     try:
         response = os.system("ping " + ip)
+        
 
         if response == 0:
             value = 100

@@ -176,6 +176,23 @@ def delete_node(id): # TODO make that you can't delete nodes if they have rules 
         postgres.close()     
 
 # ? reports
+@app.route("/api/v1/latest/reports", methods=["GET"]) # * get latest reports , in a distinct way.
+def get_latest_reports():
+    try:
+        postgres = get_db_connection()
+        cursor = postgres.cursor(cursor_factory=RealDictCursor)
+
+        cursor.execute("select distinct on (title) title, time, value from reports order by title, time desc;")
+        latest_reports = cursor.fetchall()
+
+        return jsonify(latest_reports)
+    except Exception as e:
+        print(e)
+        return jsonify({"error": str(e)}), 500  
+    finally:
+        cursor.close()
+        postgres.close()
+
 @app.route("/api/v1/get/reports", methods=["GET"]) 
 def get_reports():
     try:

@@ -28,6 +28,19 @@ def get_db_connection(): # * config
 # def page_not_found(e):
 #     return jsonify(message='Undefined route, 404'), 404 # * this code causes this error: Undefined route, 404.
 
+@app.route("/", methods=["GET"])
+def root():
+    try:
+        response = {
+            "message": "Monitoring system api",
+            "status": "ok",
+            "version": "1.0.0" 
+        }
+        return jsonify(response), 200
+    except Exception as e:
+        print(e)
+        return jsonify({"error": str(e)}), 500  
+
 # * time 
 @app.route("/get_time", methods=["GET"]) 
 def get_time():

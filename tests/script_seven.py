@@ -102,7 +102,7 @@ if __name__ == "__main__":
         for address in addresses:
             title, ip = address.split(" ")
             report_name = title + ip
-            process = Process(target=ping, args=(report_name, ip))
+            process = Thread(target=ping, args=(report_name, ip))
             process.start()
             processes.append(process)
 

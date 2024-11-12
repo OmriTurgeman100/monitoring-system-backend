@@ -70,7 +70,13 @@ with open("data.json", "r") as file:
     data = json.load(file)
 
     body = {
-        "title": "1"
+        "title": "turgi",
+        "ip": "127.0.1.7"
     }
+
+    data.append(body)
+
+with open("data.json", "w") as file:
+    json.dump(data, file, indent=2)
 
 

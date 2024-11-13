@@ -62,11 +62,16 @@ if __name__ == "__main__":
 
                 process = Process(target=ping, args=(report_id, title, ip, description))
                 process.start()
+                time.sleep(0.3)
                 processes.append(process)
 
             # Join processes after starting all of them
             for process in processes:
                 process.join()
+
+            time.sleep(10)
+
+            print("sleeping")
 
 
 

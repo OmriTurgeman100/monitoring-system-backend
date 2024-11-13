@@ -7,7 +7,7 @@ from multiprocessing import Process
 
 logging.basicConfig(level=logging.INFO, filename="log.log", filemode="a")
 
-def black_box_script():
+def black_box_script(report_id, title, description, value):
     try:
         response = requests.get("https://www.udemy.com/")
         status = response.status_code
@@ -17,11 +17,6 @@ def black_box_script():
         headers = {
             "Content-Type": "application/json"
         }
-
-        report_id = "udemy"
-        title = "udemy"
-        description = "udemy"
-        value = status
 
         body = {
             "report_id": report_id,
@@ -38,13 +33,19 @@ def black_box_script():
     except Exception as e:
         print(e)
 
-# while True:
-#     black_box_script()
-    # time.sleep(1)
+
 
 if __name__ == "__main__":
-    with open("data.json") as pings:
+    with open("data.json") as pings: # * open the json file once.
         pings_data = json.load(pings)
 
+        processes = []
+        while True:
+            for item in pings_data:
+                title = item["title"]
+                ip = item["ip"]
+
+                print(title, ip)
+
        
-    # while True:
+

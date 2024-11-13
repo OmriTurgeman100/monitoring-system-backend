@@ -57,7 +57,7 @@ if __name__ == "__main__":
                 description = "pinging servers"
                 report_id = f"{title} {ip}"
 
-                process = Process(target=ping, args=(report_id, title, description, ip))
+                process = Process(target=ping, args=(report_id, title, ip, description))
                 process.start()
                 processes.append(process)
 

@@ -5,6 +5,9 @@ import json
 from datetime import datetime
 from multiprocessing import Process
 import os
+import urllib3
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 logging.basicConfig(level=logging.INFO, filename="log.log", filemode="a")
 

@@ -42,7 +42,7 @@ def send_to_api(report_id, title, description, value):
 
     except Exception as e:
         current_time = datetime.now()
-        logging.error(f("error is {e}, time: {current_time}"))
+        logging.error(f"error is {e}, time: {current_time}")
         print(e)
 
 if __name__ == "__main__":
@@ -56,7 +56,15 @@ if __name__ == "__main__":
                 ip = item["ip"]
                 description = "pinging servers"
                 report_id = f"{title} {ip}"
-                ping(report_id, title, description, ip)
+
+                process = Process(target=ping, args=(report_id, title, description, ip))
+                process.start()
+                processes.append(process)
+
+            # Join processes after starting all of them
+            for process in processes:
+                process.join()
+
 
 
               

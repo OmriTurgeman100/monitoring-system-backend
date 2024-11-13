@@ -3,6 +3,7 @@ import time
 import logging
 import json
 from datetime import datetime
+from multiprocessing import Process
 
 logging.basicConfig(level=logging.INFO, filename="log.log", filemode="a")
 
@@ -37,6 +38,13 @@ def black_box_script():
     except Exception as e:
         print(e)
 
-while True:
-    black_box_script()
+# while True:
+#     black_box_script()
     # time.sleep(1)
+
+if __name__ == "__main__":
+    with open("data.json") as pings:
+        pings_data = json.load(pings)
+
+       
+    # while True:

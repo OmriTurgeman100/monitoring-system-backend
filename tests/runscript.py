@@ -5,6 +5,7 @@ from threading import Thread
 scripts = [
     "script_one.py",
     "script_two.py",
+    "script_three.py"
 ]
 
 def run_script(script_name):

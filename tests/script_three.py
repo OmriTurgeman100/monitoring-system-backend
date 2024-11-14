@@ -23,9 +23,10 @@ def black_box_script():
         }
 
         response = requests.post(api, data=json.dumps(body), headers=headers)
-        print(response.status_code)
+ 
 
         print(body["report_id"], body["title"], body["description"], body["value"])
+        print(response.status_code)
 
     except Exception as e:
         print(e)

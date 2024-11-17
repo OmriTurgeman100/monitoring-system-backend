@@ -732,5 +732,5 @@ def check_parent_node_rules(id):
         postgres.close()
 
 if __name__ == "__main__":
-    app.run(debug=False, port=80) #TODO when app is ready, change debug to false.
+    app.run(debug=True, port=80) #TODO when app is ready, change debug to false.
   

@@ -561,8 +561,12 @@ def expired_tree_thread():
     try: 
         postgres = get_db_connection()
         cursor = postgres.cursor(cursor_factory=RealDictCursor)
-        
-        print("expired tree function.")
+
+        cursor.execute("select distinct on (report_id) report_id, parent, title, description, time from reports where parent is not null order by report_id, time desc;")
+        reports_with_parent = cursor.fetchall()
+
+        for report in reports_with_parent:
+            print(report)
     
     except Exception as e:
         print(e)

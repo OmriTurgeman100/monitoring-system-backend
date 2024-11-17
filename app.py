@@ -565,8 +565,13 @@ def expired_tree_thread():
         cursor.execute("select distinct on (report_id) report_id, parent, title, description, time from reports where parent is not null order by report_id, time desc;")
         reports_with_parent = cursor.fetchall()
 
-        for report in reports_with_parent:
-            print(report)
+        for report in reports_with_parent: 
+            report_id = report["report_id"]
+            time = report["time"]
+            parent = report["parent"]
+
+            print(report_id, time, parent)
+
     
     except Exception as e:
         print(e)

@@ -557,6 +557,23 @@ def delete_report_rules(id):
         cursor.close()
         postgres.close()
 
+def expired_tree_thread():
+    try: 
+        postgres = get_db_connection()
+        cursor = postgres.cursor(cursor_factory=RealDictCursor)
+
+        print("expired tree function.")
+    
+    except Exception as e:
+        print(e)
+    finally:
+        cursor.close()
+        postgres.close()
+
+
+thread = Thread(target=(expired_tree_thread))
+thread.start()
+ 
 # * node rules
 @app.route("/api/v1/post/node/rules/<id>", methods=["POST"]) # * post
 def post_node_rules(id):

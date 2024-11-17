@@ -561,7 +561,7 @@ def expired_tree_thread():
     try: 
         postgres = get_db_connection()
         cursor = postgres.cursor(cursor_factory=RealDictCursor)
-
+        
         print("expired tree function.")
     
     except Exception as e:
@@ -569,7 +569,6 @@ def expired_tree_thread():
     finally:
         cursor.close()
         postgres.close()
-
 
 thread = Thread(target=(expired_tree_thread))
 thread.start()

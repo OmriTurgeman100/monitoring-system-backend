@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 import psycopg2  
 from constants import DB_HOST, DB_NAME, DB_USER, DB_PASS
 from threading import Thread
+import time
 
 app = Flask(__name__)
 
@@ -584,10 +585,16 @@ def expired_tree_thread():
                 node = cursor.fetchone()
                 node_parent = node["parent"] #* second layer starts here.
 
-                nodes = []
                 while True:
                     if node_parent != None:
-                        print("not none")
+                        cursor.execute("update nodes set status = 'expired' where node_id = %s", (node_parent,))
+                        postgres.commit()
+
+                        cursor.execute("select * from nodes where node_id = %s", (node_parent,))
+                        specified_node = cursor.fetchone()
+
+                        node_parent = specified_node["parent"]
+                       
                     else:
                         print("none")
                         break

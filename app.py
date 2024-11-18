@@ -568,9 +568,13 @@ def expired_tree_thread():
         for report in reports_with_parent: 
             report_id = report["report_id"]
             time = report["time"]
-            parent = report["parent"]
+            parent = report["parent"] # TODO if time is more than 30, means data is expired, update to upper node.
 
             print(report_id, time, parent)
+            cursor.execute("select * from nodes where node_id = %s", (parent,))
+            response = cursor.fetchone()
+
+            print(response)
 
     
     except Exception as e:

@@ -577,6 +577,8 @@ def expired_tree_thread():
                 print(f"Report {report_id} is recent (time: {report_time}).")
             else:
                 print(f"Report {report_id} is expired (time: {report_time}).")
+                cursor.execute("update nodes set status = 'expired' where node_id = %s", (parent,))
+                postgres.commit()
    
     except Exception as e:
         print(e)

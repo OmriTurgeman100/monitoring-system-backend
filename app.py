@@ -559,45 +559,47 @@ def delete_report_rules(id):
         postgres.close()
 
 def expired_tree_thread():
-    try: 
-        postgres = get_db_connection()
-        cursor = postgres.cursor(cursor_factory=RealDictCursor)
+    try:
+        while True:
+            postgres = get_db_connection()
+            cursor = postgres.cursor(cursor_factory=RealDictCursor)
 
-        cursor.execute("select distinct on (report_id) report_id, parent, title, description, time from reports where parent is not null order by report_id, time desc;")
-        reports_with_parent = cursor.fetchall()
+            cursor.execute("select distinct on (report_id) report_id, parent, title, description, time from reports where parent is not null order by report_id, time desc;")
+            reports_with_parent = cursor.fetchall()
 
-        for report in reports_with_parent: 
-            report_id = report["report_id"]
-            report_time = report["time"]
-            parent = report["parent"] # TODO if time is more than 30, means data is expired, update to upper node.
+            for report in reports_with_parent: 
+                report_id = report["report_id"]
+                report_time = report["time"]
+                parent = report["parent"] # TODO if time is more than 30, means data is expired, update to upper node.
 
-            current_time = datetime.now()
-            time_difference = current_time - report_time
+                current_time = datetime.now()
+                time_difference = current_time - report_time
 
-            if time_difference < timedelta(minutes=30):
-                print(f"Report {report_id} is recent (time: {report_time}).")
-            else:
-                print(f"Report {report_id} is expired (time: {report_time}).")  # * first layer of expired data.
-                cursor.execute("update nodes set status = 'expired' where node_id = %s", (parent,))
-                postgres.commit()
+                if time_difference < timedelta(minutes=30):
+                    # print(f"Report {report_id} is recent (time: {report_time}).")
+                    break
+                else:
+                    # print(f"Report {report_id} is expired (time: {report_time}).")  # * first layer of expired data.
+                    cursor.execute("update nodes set status = 'expired' where node_id = %s", (parent,))
+                    postgres.commit()
 
-                cursor.execute("select * from nodes where node_id = %s", (parent,))
-                node = cursor.fetchone()
-                node_parent = node["parent"] #* second layer starts here.
+                    cursor.execute("select * from nodes where node_id = %s", (parent,))
+                    node = cursor.fetchone()
+                    node_parent = node["parent"] #* second layer starts here.
 
-                while True:
-                    if node_parent != None:
-                        cursor.execute("update nodes set status = 'expired' where node_id = %s", (node_parent,))
-                        postgres.commit()
+                    while True:
+                        if node_parent != None:
+                            cursor.execute("update nodes set status = 'expired' where node_id = %s", (node_parent,))
+                            postgres.commit()
 
-                        cursor.execute("select * from nodes where node_id = %s", (node_parent,))
-                        specified_node = cursor.fetchone()
+                            cursor.execute("select * from nodes where node_id = %s", (node_parent,))
+                            specified_node = cursor.fetchone()
 
-                        node_parent = specified_node["parent"]
-                       
-                    else:
-                        print("none")
-                        break
+                            node_parent = specified_node["parent"]
+                        
+                        else:
+                            # print("none")
+                            break
 
     except Exception as e:
         print(e)

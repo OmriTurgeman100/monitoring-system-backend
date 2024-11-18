@@ -2,7 +2,7 @@ from flask import Flask, jsonify, request
 import json
 from flask_cors import CORS
 from psycopg2.extras import RealDictCursor
-from datetime import datetime
+from datetime import datetime, timedelta
 import psycopg2  
 from constants import DB_HOST, DB_NAME, DB_USER, DB_PASS
 from threading import Thread
@@ -567,18 +567,24 @@ def expired_tree_thread():
 
         for report in reports_with_parent: 
             report_id = report["report_id"]
-            time = report["time"]
+            report_time = report["time"]
             parent = report["parent"] # TODO if time is more than 30, means data is expired, update to upper node.
 
-            print(f"report time is {time}")
+            current_time = datetime.now()
+            time_difference = current_time - report_time
+
+            if time_difference < timedelta(minutes=30):
+                print(f"Report {report_id} is recent (time: {report_time}).")
+            else:
+                print(f"Report {report_id} is expired (time: {report_time}).")
 
 
 
-            print(report_id, time, parent)
-            cursor.execute("select * from nodes where node_id = %s", (parent,))
-            response = cursor.fetchone()
+            # print(report_id, time, parent)
+            # cursor.execute("select * from nodes where node_id = %s", (parent,))
+            # response = cursor.fetchone()
 
-            print(response)
+            # print(response)
 
     
     except Exception as e:

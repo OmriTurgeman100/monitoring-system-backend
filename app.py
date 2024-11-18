@@ -580,11 +580,18 @@ def expired_tree_thread():
                 cursor.execute("update nodes set status = 'expired' where node_id = %s", (parent,))
                 postgres.commit()
 
-                
                 cursor.execute("select * from nodes where node_id = %s", (parent,))
                 node = cursor.fetchone()
-                print(node["parent"])
-   
+                node_parent = node["parent"] #* second layer starts here.
+
+                nodes = []
+                while True:
+                    if node_parent != None:
+                        print("not none")
+                    else:
+                        print("none")
+                        break
+
     except Exception as e:
         print(e)
     finally:

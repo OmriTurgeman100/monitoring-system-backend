@@ -571,6 +571,10 @@ def expired_tree_thread():
             parent = report["parent"]
 
             print(report_id, time, parent)
+            cursor.execute("select * from nodes where node_id = %s", (parent,))
+            response = cursor.fetchone()
+
+            print(response)
 
     
     except Exception as e:

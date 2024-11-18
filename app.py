@@ -577,16 +577,7 @@ def expired_tree_thread():
                 print(f"Report {report_id} is recent (time: {report_time}).")
             else:
                 print(f"Report {report_id} is expired (time: {report_time}).")
-
-
-
-            # print(report_id, time, parent)
-            # cursor.execute("select * from nodes where node_id = %s", (parent,))
-            # response = cursor.fetchone()
-
-            # print(response)
-
-    
+   
     except Exception as e:
         print(e)
     finally:

@@ -576,9 +576,14 @@ def expired_tree_thread():
             if time_difference < timedelta(minutes=30):
                 print(f"Report {report_id} is recent (time: {report_time}).")
             else:
-                print(f"Report {report_id} is expired (time: {report_time}).")
+                print(f"Report {report_id} is expired (time: {report_time}).")  # * first layer of expired data.
                 cursor.execute("update nodes set status = 'expired' where node_id = %s", (parent,))
                 postgres.commit()
+
+                
+                cursor.execute("select * from nodes where node_id = %s", (parent,))
+                node = cursor.fetchone()
+                print(node["parent"])
    
     except Exception as e:
         print(e)

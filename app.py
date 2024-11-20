@@ -370,21 +370,25 @@ def update_tree_time(report_id):
         postgres = get_db_connection()
         cursor = postgres.cursor(cursor_factory=RealDictCursor)
 
-        print(report_id)
-
         cursor.execute("select * from reports where report_id = %s order by time desc", (report_id,))
         latest_report = cursor.fetchone()
 
+        report_time = latest_report['time']
         parent = latest_report['parent']
-
 
         while True:
             if parent != None:
-                print("good")
+
+                cursor.execute("update nodes set time = %s where node_id = %s", (report_time, parent))
+                postgres.commit()
+
+                cursor.execute("select * from nodes where node_id = %s", (parent,))
+                specified_node = cursor.fetchone()
+
+                parent = specified_node['parent']
+
             else:
                 break
-            
-        return jsonify({"message": "tree time has been updated successfully"}), 200
 
     except Exception as e:
         print(e)

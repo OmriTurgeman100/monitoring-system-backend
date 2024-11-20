@@ -3,10 +3,10 @@ from multiprocessing import Process
 from threading import Thread
 
 scripts = [
-    "script_one.py",
-    "script_two.py",
-    "script_three.py",
-    "script_four.py"
+    "script_1.py",
+    "script_2.py",
+    "script_3.py",
+    "script_4.py"
 ]
 
 def run_script(script_name):

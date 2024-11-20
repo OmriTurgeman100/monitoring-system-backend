@@ -354,6 +354,8 @@ def post_report():
 
             evaluate_report_rules(report_id, value, report_parent)
 
+            update_tree_time(report_id)
+
             return jsonify(new_node), 201  
 
     except Exception as e:
@@ -363,16 +365,26 @@ def post_report():
         cursor.close()
         postgres.close()
 
-def update_tree_time():
+def update_tree_time(report_id):
     try:
         postgres = get_db_connection()
         cursor = postgres.cursor(cursor_factory=RealDictCursor)
 
-        cursor.execute("delete from reports where report_id = %s", (id,))
+        print(report_id)
 
-        postgres.commit()
+        cursor.execute("select * from reports where report_id = %s order by time desc", (report_id,))
+        latest_report = cursor.fetchone()
 
-        return jsonify({"message": "Node deleted successfully"}), 200
+        parent = latest_report['parent']
+
+
+        while True:
+            if parent != None:
+                print("good")
+            else:
+                break
+            
+        return jsonify({"message": "tree time has been updated successfully"}), 200
 
     except Exception as e:
         print(e)

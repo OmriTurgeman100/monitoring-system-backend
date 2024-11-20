@@ -745,16 +745,20 @@ def thread_evaluation(id):
         postgres.close()
 
 def threaded_evaluate_rules(condition, action, nodes_and_their_status):
-    operator = condition['operator']
-    node_conditions = condition['conditions']
+    try:
+        operator = condition['operator']
+        node_conditions = condition['conditions']
 
-    if operator == 'AND':
-        result = all(nodes_and_their_status.get(cond['node_id']) == cond['status'] for cond in node_conditions)
-        return result
+        if operator == 'AND':
+            result = all(nodes_and_their_status.get(cond['node_id']) == cond['status'] for cond in node_conditions)
+            return result
 
-    elif operator == 'OR':
-        result = any(nodes_and_their_status.get(cond['node_id']) == cond['status'] for cond in node_conditions)
-        return result
+        elif operator == 'OR':
+            result = any(nodes_and_their_status.get(cond['node_id']) == cond['status'] for cond in node_conditions)
+            return result
+        
+    except Exception as e:
+        print(e)
     
 def rules_evaluation_thread(): #TODO , consider making it run as a threaded process.
     try: 

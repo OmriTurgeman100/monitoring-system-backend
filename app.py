@@ -363,6 +363,24 @@ def post_report():
         cursor.close()
         postgres.close()
 
+def update_tree_time():
+    try:
+        postgres = get_db_connection()
+        cursor = postgres.cursor(cursor_factory=RealDictCursor)
+
+        cursor.execute("delete from reports where report_id = %s", (id,))
+
+        postgres.commit()
+
+        return jsonify({"message": "Node deleted successfully"}), 200
+
+    except Exception as e:
+        print(e)
+        return jsonify({"error": str(e)}), 500  
+    finally:
+        cursor.close()
+        postgres.close()
+
 
 @app.route("/api/v1/delete/report/<id>", methods=["DELETE"]) # ! delete the entire report!
 def delete_reports(id):

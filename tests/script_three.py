@@ -28,6 +28,9 @@ def black_box_script():
 
         print(body["report_id"], body["title"], body["description"], body["value"])
         print(response.status_code)
+        data = response.json()
+
+        print(data)
 
     except Exception as e:
         print(e)

@@ -41,15 +41,15 @@ def send_to_api(report_id, title, description, value):
         print(response.status_code)
 
         current_time = datetime.now()
-        logging.info(f"sent report, report id: {report_id}, title: {title}, description: {description}, value: {value}, time: {current_time}, status_code: {response.status_code}")
+        # logging.info(f"sent report, report id: {report_id}, title: {title}, description: {description}, value: {value}, time: {current_time}, status_code: {response.status_code}")
 
     except Exception as e:
         current_time = datetime.now()
-        logging.error(f"error is {e}, time: {current_time}")
+        # logging.error(f"error is {e}, time: {current_time}")
         print(e)
 
 if __name__ == "__main__":
-    with open("data.json") as pings: # * open the json file once.
+    with open("./json/data.json") as pings: # * open the json file once.
         pings_data = json.load(pings)
 
         processes = []

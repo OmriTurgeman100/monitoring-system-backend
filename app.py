@@ -740,7 +740,6 @@ def thread_evaluation(id):
  
     except Exception as e:
         print(e)
-        return jsonify({"error": str(e)}), 500
     finally:
         cursor.close()
         postgres.close()

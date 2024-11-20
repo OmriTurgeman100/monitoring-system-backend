@@ -6,11 +6,15 @@ from datetime import datetime, timedelta
 import psycopg2  
 from constants import DB_HOST, DB_NAME, DB_USER, DB_PASS
 from threading import Thread
+from werkzeug.serving import WSGIRequestHandler
+import logging
 import time
 
 app = Flask(__name__)
 
 CORS(app)
+
+logging.getLogger('werkzeug').setLevel(logging.ERROR) # * used to disable errors via terminal.
 
 def get_db_connection(): # * config
     try:

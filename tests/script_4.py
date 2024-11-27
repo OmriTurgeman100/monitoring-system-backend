@@ -39,6 +39,7 @@ class ping:
             }
 
             response = requests.post(api, data=json.dumps(body), headers=headers)
+            print("sent")
             print(response.status_code)
         except Exception as e:
             print(e)

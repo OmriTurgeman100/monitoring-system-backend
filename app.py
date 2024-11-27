@@ -151,7 +151,7 @@ def post_data():
         cursor.execute("SELECT * FROM reports WHERE parent = %s", (parent,))
         nodes = cursor.fetchone()
 
-        print(nodes)
+        # print(nodes)
 
         if parent and nodes:
             return jsonify(message="Cannot create node: a report with the same parent already exists."),400
@@ -177,7 +177,7 @@ def post_data():
 @app.route("/api/v1/delete/node/<id>", methods=["DELETE"]) #! delete
 def delete_node(id): # TODO make that you can't delete nodes if they have rules under them. 
     try:
-        print(type(id))
+        # print(type(id))
         postgres = get_db_connection()
         cursor = postgres.cursor(cursor_factory=RealDictCursor)
         
@@ -698,7 +698,6 @@ def get_specific_node_rule(id):
     
     except Exception as e:
         print(e)
-        print('error')
         return jsonify({"error": str(e)}), 500
     finally:
         cursor.close()

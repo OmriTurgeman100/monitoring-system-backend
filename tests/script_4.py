@@ -13,30 +13,35 @@ class ping:
         self.send_results()
 
     def ping_method(self):
-        response = os.system(f"ping {self.ip}")
+        try:
+            response = os.system(f"ping {self.ip}")
 
-        if response == 0:
-            self.value = 100
-        else:
-            self.value = 50
+            if response == 0:
+                self.value = 100
+            else:
+                self.value = 50
+        except Exception as e:
+            print(e)
 
     def send_results(self):
-        api = "http://localhost/api/v1/post/reports"
+        try:
+            api = "http://localhost/api/v1/post/reports"
 
-        headers = {
-            "Content-Type": "application/json"
-        }
+            headers = {
+                "Content-Type": "application/json"
+            }
 
-        body = {
-            "report_id": self.report_name,
-            "title": self.report_name,
-            "description": self.report_name,
-            "value": self.value
-        }
+            body = {
+                "report_id": self.report_name,
+                "title": self.report_name,
+                "description": self.report_name,
+                "value": self.value
+            }
 
-        response = requests.post(api, data=json.dumps(body), headers=headers)
-        print(response.status_code)
-
+            response = requests.post(api, data=json.dumps(body), headers=headers)
+            print(response.status_code)
+        except Exception as e:
+            print(e)
 
 addresses = [
     "Google 8.8.8.8",

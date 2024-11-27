@@ -9,7 +9,7 @@ import urllib3
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-logging.basicConfig(level=logging.INFO, filename="log.log", filemode="a")
+# logging.basicConfig(level=logging.INFO, filename="log.log", filemode="a")
 
 def ping(report_id,title, ip, description):
     output = os.system(f"ping {ip}")
@@ -49,7 +49,7 @@ def send_to_api(report_id, title, description, value):
         print(e)
 
 if __name__ == "__main__":
-    with open("./json/data.json") as pings: # * open the json file once.
+    with open("../json/data.json") as pings: # * open the json file once.
         pings_data = json.load(pings)
 
         processes = []
@@ -69,9 +69,7 @@ if __name__ == "__main__":
             for process in processes:
                 process.join()
 
-            time.sleep(10)
 
-            print("sleeping")
 
 
 

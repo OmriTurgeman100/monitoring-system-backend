@@ -31,7 +31,7 @@ def black_box_script():
         response = requests.post(api, data=json.dumps(body), headers=headers)
         print(response.status_code)
         current_time = datetime.now()
-        logging.info(f"sent report, report id: {report_id}, title: {title}, description: {description}, value: {value}, time: {current_time}")
+        # logging.info(f"sent report, report id: {report_id}, title: {title}, description: {description}, value: {value}, time: {current_time}")
 
     except Exception as e:
         print(e)

@@ -646,8 +646,8 @@ def expired_tree_thread():
         cursor.close()
         postgres.close()
 
-thread = Thread(target=(expired_tree_thread))
-thread.start()
+# thread = Thread(target=(expired_tree_thread))
+# thread.start()
  
 # * node rules
 @app.route("/api/v1/post/node/rules/<id>", methods=["POST"]) # * post
@@ -780,8 +780,8 @@ def rules_evaluation_thread(): #TODO , consider making it run as a threaded proc
         postgres.close()
 
 
-thread = Thread(target=rules_evaluation_thread)
-thread.start()
+# thread = Thread(target=rules_evaluation_thread)
+# thread.start()
  
 # ! delete node rule
 @app.route("/api/v1/delete/node/rule/<id>", methods=["DELETE"])
@@ -826,8 +826,12 @@ def check_parent_node_rules(id):
         postgres.close()
 
 def run_background_threads():
-    print("test hey!")
+    
+    rules_evaluation_thread_process = Process(target=rules_evaluation_thread)
+    rules_evaluation_thread_process.start()
 
+    expired_tree_thread_process = Process(target=expired_tree_thread)
+    expired_tree_thread_process.start()
 
 if __name__ == "__main__":
     process = Process(target=rules_evaluation_thread)

@@ -825,6 +825,14 @@ def check_parent_node_rules(id):
         cursor.close()
         postgres.close()
 
+def run_background_threads():
+    print("test hey!")
+
+
+if __name__ == "__main__":
+    process = Process(target=rules_evaluation_thread)
+    process.start()
+   
 if __name__ == "__main__":
     app.run(debug=True, port=80) #TODO when app is ready, change debug to false.
   

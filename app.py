@@ -15,7 +15,7 @@ app = Flask(__name__)
 
 CORS(app)
 
-logging.getLogger('werkzeug').setLevel(logging.ERROR) # * used to disable errors via terminal.
+# logging.getLogger('werkzeug').setLevel(logging.ERROR) # * used to disable errors via terminal.
 
 def get_db_connection(): # * config
     try:
@@ -833,7 +833,7 @@ def run_background_threads():
     expired_tree_thread_process.start()
    
 if __name__ == "__main__":
-    app.run(debug=False, port=80) #TODO when app is ready, change debug to false.
+    app.run(debug=False, host='0.0.0.0', port=80) #TODO when app is ready, change debug to false.
     process = Process(target=run_background_threads)
     process.start()
   

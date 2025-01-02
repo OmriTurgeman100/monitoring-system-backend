@@ -720,7 +720,7 @@ def thread_evaluation(id):
         for rule in rules:
             condition = rule['conditions']
             action = rule['action']
-            if threaded_evaluate_rules(condition, action, nodes_and_their_status): # * return true if there is a match.
+            if threaded_evaluate_rules(condition, action, nodes_and_their_status): # * returns true if there is a match.
 
                 if action == "set_parent_status_up":
 
@@ -831,11 +831,9 @@ def run_background_threads():
 
     expired_tree_thread_process = Process(target=expired_tree_thread)
     expired_tree_thread_process.start()
-
-if __name__ == "__main__":
-    process = Process(target=rules_evaluation_thread)
-    process.start()
    
 if __name__ == "__main__":
     app.run(debug=False, port=80) #TODO when app is ready, change debug to false.
+    process = Process(target=run_background_threads)
+    process.start()
   
